@@ -1,0 +1,8 @@
+[package]
+name = "rust-boids"
+version = "0.1.0"
+authors = ["Mike Goddard"]
+
+[dependencies.fungine]
+git = "https://github.com/mcgoddard/fungine.git"
+branch = "multi-threaded"
