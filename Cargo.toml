@@ -9,3 +9,4 @@ branch = "multi-threaded"
 
 [dependencies]
 cgmath = "0.14.1"
+stopwatch = "0.0.7"
