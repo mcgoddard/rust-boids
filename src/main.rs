@@ -38,11 +38,22 @@ mod boids {
     }
 
     #[derive(Clone, Serialize, Deserialize)]
+    pub enum BoidColourKind {
+        Green,
+        Blue,
+        Red,
+        Orange,
+        Purple,
+        Yellow
+    }
+
+    #[derive(Clone, Serialize, Deserialize)]
     pub struct Boid {
         #[serde(with = "Vector3Def")]
         pub position: Vector3<f32>,
         #[serde(with = "Vector3Def")]
-        pub direction: Vector3<f32>
+        pub direction: Vector3<f32>,
+        pub colour: BoidColourKind
     }
 
     impl GameObject for Boid {
@@ -73,7 +84,8 @@ mod boids {
             let new_position = self.position.add(new_direction);
             Box::new(Boid {
                 position: new_position,
-                direction: new_direction
+                direction: new_direction,
+                colour: self.colour.clone()
             })
         }
     }
@@ -81,16 +93,25 @@ mod boids {
     unsafe impl Sync for Boid {}
 }
 
-use boids::Boid;
+use boids::{Boid, BoidColourKind};
 use fungine::fungine::{Fungine, GameObject, Message};
 use cgmath::Vector3;
 
 fn main() {
     let mut initial_state = Vec::new();
     for i in 0i32..1000i32 {
+        let boid_colour = match i % 6 {
+            0 => BoidColourKind::Green,
+            1 => BoidColourKind::Blue,
+            2 => BoidColourKind::Red,
+            3 => BoidColourKind::Orange,
+            4 => BoidColourKind::Purple,
+            _ => BoidColourKind::Yellow,
+        };
         let initial_object = Boid {
             position: Vector3::new(i as f32,i as f32,i as f32),
-            direction: Vector3::new(1.0f32,1.0f32,1.0f32)
+            direction: Vector3::new(1.0f32,1.0f32,1.0f32),
+            colour: boid_colour
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
@@ -106,7 +127,7 @@ mod tests {
     use fungine::fungine::{Fungine, GameObject, Message};
     use stopwatch::{Stopwatch};
     use cgmath::Vector3;
-    use boids::Boid;
+    use boids::{Boid, BoidColourKind};
 
     #[test]
     fn speed_test() {
@@ -114,7 +135,8 @@ mod tests {
         for i in 0i32..1000i32 {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
-                direction: Vector3::new(1.0f32,1.0f32,1.0f32)
+                direction: Vector3::new(1.0f32,1.0f32,1.0f32),
+                colour: BoidColourKind::Green
             };
             let initial_object = Box::new(initial_object) as Box<GameObject>;
             let initial_object = Arc::new(initial_object);
