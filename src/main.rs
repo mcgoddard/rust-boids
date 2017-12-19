@@ -53,7 +53,8 @@ mod boids {
         pub position: Vector3<f32>,
         #[serde(with = "Vector3Def")]
         pub direction: Vector3<f32>,
-        pub colour: BoidColourKind
+        pub colour: BoidColourKind,
+        pub id: i32
     }
 
     impl GameObject for Boid {
@@ -85,7 +86,8 @@ mod boids {
             Box::new(Boid {
                 position: new_position,
                 direction: new_direction,
-                colour: self.colour.clone()
+                colour: self.colour.clone(),
+                id: self.id
             })
         }
     }
@@ -111,7 +113,8 @@ fn main() {
         let initial_object = Boid {
             position: Vector3::new(i as f32,i as f32,i as f32),
             direction: Vector3::new(1.0f32,1.0f32,1.0f32),
-            colour: boid_colour
+            colour: boid_colour,
+            id: i
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
@@ -136,7 +139,8 @@ mod tests {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
                 direction: Vector3::new(1.0f32,1.0f32,1.0f32),
-                colour: BoidColourKind::Green
+                colour: BoidColourKind::Green,
+                id: i
             };
             let initial_object = Box::new(initial_object) as Box<GameObject>;
             let initial_object = Arc::new(initial_object);
