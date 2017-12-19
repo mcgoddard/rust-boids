@@ -1,6 +1,9 @@
 extern crate fungine;
 extern crate cgmath;
 extern crate stopwatch;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 
 use std::sync::Arc;
 
@@ -22,9 +25,23 @@ mod boids {
             (second.z - first.z).powi(2)).sqrt()
     }
 
-    #[derive(Clone)]
+    // Add serde serialization to cgmath's Vector3 type
+    #[derive(Serialize, Deserialize)]
+    #[serde(remote = "Vector3")]
+    struct Vector3Def<S> {
+        /// The x component of the vector.
+        pub x: S,
+        /// The y component of the vector.
+        pub y: S,
+        /// The z component of the vector.
+        pub z: S,
+    }
+
+    #[derive(Clone, Serialize, Deserialize)]
     pub struct Boid {
+        #[serde(with = "Vector3Def")]
         pub position: Vector3<f32>,
+        #[serde(with = "Vector3Def")]
         pub direction: Vector3<f32>
     }
 
@@ -33,7 +50,7 @@ mod boids {
             Box::new((*self).clone())
         }
 
-        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject+Send+Sync>>>>, _messages: Vec<Message>) -> Box<GameObject+Send+Sync> {
+        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>) -> Box<GameObject> {
             let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
@@ -70,16 +87,16 @@ use cgmath::Vector3;
 
 fn main() {
     let mut initial_state = Vec::new();
-    for i in 0..1000 {
+    for i in 0i32..1000i32 {
         let initial_object = Boid {
             position: Vector3::new(i as f32,i as f32,i as f32),
             direction: Vector3::new(1.0f32,1.0f32,1.0f32)
         };
-        let initial_object = Box::new(initial_object) as Box<GameObject+Send+Sync>;
+        let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
         initial_state.push(initial_object);
     }
-    let engine = Fungine::new(Arc::new(initial_state));
+    let engine = Fungine::new(Arc::new(initial_state), None);
     let _next_states = engine.run();
 }
 
@@ -94,16 +111,16 @@ mod tests {
     #[test]
     fn speed_test() {
         let mut initial_state = Vec::new();
-        for i in 0..1000 {
+        for i in 0i32..1000i32 {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
                 direction: Vector3::new(1.0f32,1.0f32,1.0f32)
             };
-            let initial_object = Box::new(initial_object) as Box<GameObject+Send+Sync>;
+            let initial_object = Box::new(initial_object) as Box<GameObject>;
             let initial_object = Arc::new(initial_object);
             initial_state.push(initial_object);
         }
-        let engine = Fungine::new(Arc::new(initial_state));
+        let engine = Fungine::new(Arc::new(initial_state), None);
         let sw = Stopwatch::start_new();
         let _final_states = engine.run_steps(60);
         println!("Time taken: {}ms", sw.elapsed_ms());

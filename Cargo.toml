@@ -5,8 +5,10 @@ authors = ["Mike Goddard"]
 
 [dependencies.fungine]
 git = "https://github.com/mcgoddard/fungine.git"
-branch = "multi-threaded"
+branch = "udp_state_send"
 
 [dependencies]
 cgmath = "0.14.1"
 stopwatch = "0.0.7"
+serde = "1.0"
+serde_derive = "1.0"
