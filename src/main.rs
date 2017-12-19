@@ -33,7 +33,7 @@ mod boids {
             Box::new((*self).clone())
         }
 
-        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject+Send+Sync>>>>, messages: Vec<Message>) -> Box<GameObject+Send+Sync> {
+        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject+Send+Sync>>>>, _messages: Vec<Message>) -> Box<GameObject+Send+Sync> {
             let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
@@ -80,7 +80,7 @@ fn main() {
         initial_state.push(initial_object);
     }
     let engine = Fungine::new(Arc::new(initial_state));
-    let next_states = engine.run();
+    let _next_states = engine.run();
 }
 
 #[cfg(test)]
@@ -105,7 +105,7 @@ mod tests {
         }
         let engine = Fungine::new(Arc::new(initial_state));
         let sw = Stopwatch::start_new();
-        let final_states = engine.run_steps(60);
+        let _final_states = engine.run_steps(60);
         println!("Time taken: {}ms", sw.elapsed_ms());
     }
 }
