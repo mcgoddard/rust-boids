@@ -81,7 +81,7 @@ mod boids {
             }
             centre_vector = centre_vector.div(neighbour_count as f32).sub(self.position).div(100.0f32);
             align_vector = align_vector.div(neighbour_count as f32).sub(self.position).div(8.0f32);
-            let new_direction = self.direction.add(centre_vector).add(align_vector).add(separation_vector).normalize();
+            let new_direction = self.direction.add(centre_vector).add(align_vector).add(separation_vector).normalize().div(60.0f32);
             let new_position = self.position.add(new_direction);
             Box::new(Boid {
                 position: new_position,
@@ -96,12 +96,13 @@ mod boids {
 }
 
 use boids::{Boid, BoidColourKind};
+use std::str::FromStr;
 use fungine::fungine::{Fungine, GameObject, Message};
 use cgmath::Vector3;
 
 fn main() {
     let mut initial_state = Vec::new();
-    for i in 0i32..1000i32 {
+    for i in 0i32..100i32 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
             1 => BoidColourKind::Blue,
@@ -111,7 +112,7 @@ fn main() {
             _ => BoidColourKind::Yellow,
         };
         let initial_object = Boid {
-            position: Vector3::new(i as f32,i as f32,i as f32),
+            position: Vector3::new((i % 10) as f32,(i % 5) as f32,(i / 10) as f32),
             direction: Vector3::new(1.0f32,1.0f32,1.0f32),
             colour: boid_colour,
             id: i
@@ -120,7 +121,8 @@ fn main() {
         let initial_object = Arc::new(initial_object);
         initial_state.push(initial_object);
     }
-    let engine = Fungine::new(Arc::new(initial_state), None);
+    let port = "4794";
+    let engine = Fungine::new(Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
     let _next_states = engine.run();
 }
 
