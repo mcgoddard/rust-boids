@@ -18,6 +18,7 @@ mod boids {
     use cgmath::InnerSpace;
 
     const NEIGHBOUR_DISTANCE: f32 = 10.0;
+    const SEPARATION_DISTANCE: f32 = 1.0;
 
     fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
         ((second.x - first.x).powi(2) +
@@ -75,7 +76,9 @@ mod boids {
                         centre_vector = centre_vector.add(boid.position);
                         align_vector = align_vector.add(boid.direction);
                         neighbour_count += 1.0f32;
-                        separation_vector = separation_vector.sub(self.position.sub(boid.position))
+                        if distance < SEPARATION_DISTANCE {
+                            separation_vector = separation_vector.sub(boid.position.sub(self.position))
+                        }
                     }
                 }
             }
