@@ -5,7 +5,7 @@ authors = ["Mike Goddard"]
 
 [dependencies.fungine]
 git = "https://github.com/mcgoddard/fungine.git"
-branch = "udp_state_send"
+branch = "udp_worker"
 
 [dependencies]
 cgmath = "0.14.1"

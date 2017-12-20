@@ -142,6 +142,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
+    use std::str::FromStr;
     use fungine::fungine::{Fungine, GameObject, Message};
     use stopwatch::{Stopwatch};
     use cgmath::Vector3;
@@ -162,6 +163,27 @@ mod tests {
             initial_state.push(initial_object);
         }
         let engine = Fungine::new(Arc::new(initial_state), None);
+        let sw = Stopwatch::start_new();
+        let _final_states = engine.run_steps(60);
+        println!("Time taken: {}ms", sw.elapsed_ms());
+    }
+
+    #[test]
+    fn speed_with_networking_test() {
+        let mut initial_state = Vec::new();
+        for i in 0i32..1000i32 {
+            let initial_object = Boid {
+                position: Vector3::new(i as f32,i as f32,i as f32),
+                direction: Vector3::new(1.0f32,1.0f32,1.0f32),
+                colour: BoidColourKind::Green,
+                id: i
+            };
+            let initial_object = Box::new(initial_object) as Box<GameObject>;
+            let initial_object = Arc::new(initial_object);
+            initial_state.push(initial_object);
+        }
+        let port = "4794";
+        let engine = Fungine::new(Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
         let sw = Stopwatch::start_new();
         let _final_states = engine.run_steps(60);
         println!("Time taken: {}ms", sw.elapsed_ms());
