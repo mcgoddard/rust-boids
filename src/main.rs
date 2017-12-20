@@ -4,6 +4,7 @@ extern crate stopwatch;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
+extern crate rand;
 
 use std::sync::Arc;
 
@@ -14,8 +15,7 @@ mod boids {
     use std::ops::Div;
     use std::f32;
     use fungine::fungine::{GameObject, Message};
-    use cgmath::Vector3;
-    use cgmath::InnerSpace;
+    use cgmath::{ Vector3, InnerSpace };
 
     const NEIGHBOUR_DISTANCE: f32 = 10.0;
     const SEPARATION_DISTANCE: f32 = 1.0;
@@ -83,9 +83,14 @@ mod boids {
                 }
             }
             centre_vector = centre_vector.div(neighbour_count as f32).sub(self.position).div(100.0f32);
-            align_vector = align_vector.div(neighbour_count as f32).sub(self.position).div(8.0f32);
-            let new_direction = self.direction.add(centre_vector).add(align_vector).add(separation_vector).normalize().div(60.0f32);
-            let new_position = self.position.add(new_direction);
+            align_vector = align_vector.div(neighbour_count as f32).sub(self.direction).div(8.0f32);
+            let mut new_direction = self.direction;
+            new_direction = new_direction.add(centre_vector);
+            new_direction = new_direction.add(align_vector);
+            new_direction = new_direction.add(separation_vector);
+            new_direction = new_direction.normalize();
+            // TODO : the divide by 120 here should be frame time dependant
+            let new_position = self.position.add(new_direction.div(120.0f32));
             Box::new(Boid {
                 position: new_position,
                 direction: new_direction,
@@ -101,9 +106,11 @@ mod boids {
 use boids::{Boid, BoidColourKind};
 use std::str::FromStr;
 use fungine::fungine::{Fungine, GameObject, Message};
-use cgmath::Vector3;
+use cgmath::{ Vector3, InnerSpace };
+use rand::Rng;
 
 fn main() {
+    let mut rng = rand::thread_rng();
     let mut initial_state = Vec::new();
     for i in 0i32..100i32 {
         let boid_colour = match i % 6 {
@@ -114,9 +121,12 @@ fn main() {
             4 => BoidColourKind::Purple,
             _ => BoidColourKind::Yellow,
         };
+        let x = ((rng.gen::<u32>() % 100) as f32) / 10.0;
+        let y = ((rng.gen::<u32>() % 100) as f32) / 10.0;
+        let z = ((rng.gen::<u32>() % 100) as f32) / 10.0;
         let initial_object = Boid {
-            position: Vector3::new((i % 10) as f32,(i % 5) as f32,(i / 10) as f32),
-            direction: Vector3::new(1.0f32,1.0f32,1.0f32),
+            position: Vector3::new(x, y, z),
+            direction: Vector3::new(rng.gen::<f32>(),rng.gen::<f32>(),rng.gen::<f32>()).normalize(),
             colour: boid_colour,
             id: i
         };
