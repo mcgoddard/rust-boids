@@ -112,7 +112,7 @@ use rand::Rng;
 fn main() {
     let mut rng = rand::thread_rng();
     let mut initial_state = Vec::new();
-    for i in 0i32..100i32 {
+    for i in 0i32..1000i32 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
             1 => BoidColourKind::Blue,
@@ -121,12 +121,15 @@ fn main() {
             4 => BoidColourKind::Purple,
             _ => BoidColourKind::Yellow,
         };
-        let x = ((rng.gen::<u32>() % 300) as f32) / 10.0;
-        let y = ((rng.gen::<u32>() % 300) as f32) / 10.0;
-        let z = ((rng.gen::<u32>() % 300) as f32) / 10.0;
+        let x = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
+        let y = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
+        let z = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
+        let x_dir = rng.gen::<f32>() - 0.5f32;
+        let y_dr = rng.gen::<f32>() - 0.5f32;
+        let z_dir = rng.gen::<f32>() - 0.5f32;
         let initial_object = Boid {
             position: Vector3::new(x, y, z),
-            direction: Vector3::new(rng.gen::<f32>(),rng.gen::<f32>(),rng.gen::<f32>()).normalize(),
+            direction: Vector3::new(x_dir, y_dr, z_dir).normalize(),
             colour: boid_colour,
             id: i
         };
