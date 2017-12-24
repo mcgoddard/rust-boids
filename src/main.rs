@@ -121,9 +121,9 @@ fn main() {
             4 => BoidColourKind::Purple,
             _ => BoidColourKind::Yellow,
         };
-        let x = ((rng.gen::<u32>() % 100) as f32) / 10.0;
-        let y = ((rng.gen::<u32>() % 100) as f32) / 10.0;
-        let z = ((rng.gen::<u32>() % 100) as f32) / 10.0;
+        let x = ((rng.gen::<u32>() % 300) as f32) / 10.0;
+        let y = ((rng.gen::<u32>() % 300) as f32) / 10.0;
+        let z = ((rng.gen::<u32>() % 300) as f32) / 10.0;
         let initial_object = Boid {
             position: Vector3::new(x, y, z),
             direction: Vector3::new(rng.gen::<f32>(),rng.gen::<f32>(),rng.gen::<f32>()).normalize(),
@@ -171,7 +171,7 @@ mod tests {
     #[test]
     fn speed_with_networking_test() {
         let mut initial_state = Vec::new();
-        for i in 0i32..1000i32 {
+        for i in 0i32..500i32 {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
                 direction: Vector3::new(1.0f32,1.0f32,1.0f32),
