@@ -25,7 +25,7 @@ pub mod boids_sim {
 
     #[allow(dead_code)]
     #[no_mangle]
-    pub extern fn new() -> BoidsSim {
+    pub extern fn newSim() -> BoidsSim {
         let mut rng = rand::thread_rng();
         let mut initial_state = Vec::new();
         for i in 0i32..1000i32 {
