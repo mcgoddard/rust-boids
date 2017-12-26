@@ -3,6 +3,15 @@ name = "rust-boids"
 version = "0.1.0"
 authors = ["Mike Goddard"]
 
+[lib]
+name="rustboidslib"
+crate-type = ["rlib", "dylib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "rustboidsbin"
+path = "src/main.rs"
+
 [dependencies.fungine]
 git = "https://github.com/mcgoddard/fungine.git"
 branch = "udp_worker"
