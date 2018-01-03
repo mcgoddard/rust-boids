@@ -33,7 +33,8 @@ pub mod boids {
         pub z: S,
     }
 
-    #[derive(Clone, Serialize, Deserialize)]
+    #[repr(C)]
+    #[derive(Clone, Serialize, Deserialize, Copy)]
     pub enum BoidColourKind {
         Green,
         Blue,
@@ -43,7 +44,8 @@ pub mod boids {
         Yellow
     }
 
-    #[derive(Clone, Serialize, Deserialize)]
+    #[repr(C)]
+    #[derive(Clone, Serialize, Deserialize, Copy)]
     pub struct Boid {
         #[serde(with = "Vector3Def")]
         pub position: Vector3<f32>,
