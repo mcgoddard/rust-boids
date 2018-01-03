@@ -8,7 +8,6 @@ extern crate rand;
 
 pub mod boids;
 
-use std::str::FromStr;
 use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{Fungine, GameObject};
@@ -46,8 +45,7 @@ pub extern fn newSim() -> *mut Fungine {
         let initial_object = Arc::new(initial_object);
         initial_state.push(initial_object);
     }
-    let port = "4794";
-    let engine = Fungine::new(Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
+    let engine = Fungine::new(Arc::new(initial_state), None);
 
     let sim_ref = unsafe { transmute(Box::new(engine)) };
     sim_ref
@@ -55,13 +53,30 @@ pub extern fn newSim() -> *mut Fungine {
 
 #[allow(dead_code)]
 #[no_mangle]
-pub extern fn step(sim_ptr: *mut Fungine) -> Arc<Vec<Arc<Box<GameObject>>>> {
+pub extern fn step(sim_ptr: *mut Fungine) -> usize {
     let sim = unsafe { &mut *sim_ptr };
-    let content = sim.run_steps_cont(1);
-    content
+    let _ = sim.run_steps_cont(1);
+    sim.current_state.len()
 }
 
 #[allow(dead_code)]
+#[no_mangle]
+pub extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> boids::boids::Boid {
+    let sim = unsafe { &mut *sim_ptr };
+    let game_object = &sim.current_state[index];
+    if let Some(boid) = game_object.downcast_ref::<Boid>() {
+        *boid
+    }
+    else {
+        Boid {
+            position: Vector3::new(0f32, 0f32, 0f32),
+            direction: Vector3::new(0f32, 0f32, 0f32),
+            colour: BoidColourKind::Green,
+            id: 0
+        }
+    }
+}
+
 #[no_mangle]
 pub extern fn destroySim(sim_ptr: *mut Fungine) {
     let _sim: Box<Fungine> = unsafe{ transmute(sim_ptr) };
