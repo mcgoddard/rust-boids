@@ -4,9 +4,7 @@ extern crate stopwatch;
 extern crate serde;
 
 use std::sync::Arc;
-use std::ops::Add;
-use std::ops::Sub;
-use std::ops::Div;
+use std::ops::{ Add, Sub, Div, Mul };
 use std::f32;
 use fungine::fungine::{GameObject, Message};
 use cgmath::{ Vector3, InnerSpace };
@@ -59,7 +57,7 @@ impl GameObject for Boid {
         Box::new(*self)
     }
 
-    fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>, _frame_time: f32) -> Box<GameObject> {
+    fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>, frame_time: f32) -> Box<GameObject> {
         let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
@@ -85,8 +83,7 @@ impl GameObject for Boid {
         new_direction = new_direction.add(align_vector);
         new_direction = new_direction.add(separation_vector);
         new_direction = new_direction.normalize();
-        // TODO : the divide by 120 here should be frame time dependant
-        let new_position = self.position.add(new_direction.div(120.0f32));
+        let new_position = self.position.add(new_direction.mul(frame_time));
         Box::new(Boid {
             position: new_position,
             direction: new_direction,
