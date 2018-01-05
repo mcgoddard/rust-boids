@@ -11,7 +11,7 @@ pub mod boids;
 use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{Fungine, GameObject};
-use boids::boids::{Boid, BoidColourKind};
+use boids::{Boid, BoidColourKind};
 use cgmath::{ Vector3, InnerSpace };
 use rand::Rng;
 
@@ -47,22 +47,21 @@ pub extern fn newSim() -> *mut Fungine {
     }
     let engine = Fungine::new(&Arc::new(initial_state), None);
 
-    let sim_ref = unsafe { transmute(Box::new(engine)) };
-    sim_ref
+    unsafe { transmute(Box::new(engine)) }
 }
 
 #[allow(dead_code)]
 #[no_mangle]
-pub extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
-    let sim = unsafe { &mut *sim_ptr };
+pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
+    let sim = &mut *sim_ptr;
     let _ = sim.run_steps_cont(1, frame_time);
     sim.current_state.len()
 }
 
 #[allow(dead_code)]
 #[no_mangle]
-pub extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> boids::boids::Boid {
-    let sim = unsafe { &mut *sim_ptr };
+pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> boids::Boid {
+    let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
     if let Some(boid) = game_object.downcast_ref::<Boid>() {
         *boid
@@ -78,7 +77,7 @@ pub extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> boids::boids::Boid
 }
 
 #[no_mangle]
-pub extern fn destroySim(sim_ptr: *mut Fungine) {
-    let _sim: Box<Fungine> = unsafe{ transmute(sim_ptr) };
+pub unsafe extern fn destroySim(sim_ptr: *mut Fungine) {
+    let _sim: Box<Fungine> = transmute(sim_ptr);
     // Drop to free
 }

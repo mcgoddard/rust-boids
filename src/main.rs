@@ -4,7 +4,7 @@ extern crate stopwatch;
 extern crate rand;
 extern crate rustboidslib;
 
-use rustboidslib::boids::boids::{Boid, BoidColourKind};
+use rustboidslib::boids::{Boid, BoidColourKind};
 use std::str::FromStr;
 use std::sync::Arc;
 use fungine::fungine::{Fungine, GameObject};
@@ -41,7 +41,7 @@ fn main() {
     }
     let port = "4794";
     let engine = Fungine::new(&Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
-    let _next_states = engine.run();
+    engine.run();
 }
 
 #[cfg(test)]
