@@ -60,7 +60,7 @@ pub mod boids {
             Box::new((*self).clone())
         }
 
-        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>) -> Box<GameObject> {
+        fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>, _frame_time: f32) -> Box<GameObject> {
             let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
             let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);

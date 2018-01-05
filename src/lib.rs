@@ -45,7 +45,7 @@ pub extern fn newSim() -> *mut Fungine {
         let initial_object = Arc::new(initial_object);
         initial_state.push(initial_object);
     }
-    let engine = Fungine::new(Arc::new(initial_state), None);
+    let engine = Fungine::new(&Arc::new(initial_state), None);
 
     let sim_ref = unsafe { transmute(Box::new(engine)) };
     sim_ref
@@ -53,9 +53,9 @@ pub extern fn newSim() -> *mut Fungine {
 
 #[allow(dead_code)]
 #[no_mangle]
-pub extern fn step(sim_ptr: *mut Fungine) -> usize {
+pub extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
     let sim = unsafe { &mut *sim_ptr };
-    let _ = sim.run_steps_cont(1);
+    let _ = sim.run_steps_cont(1, frame_time);
     sim.current_state.len()
 }
 

@@ -40,7 +40,7 @@ fn main() {
         initial_state.push(initial_object);
     }
     let port = "4794";
-    let engine = Fungine::new(Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
+    let engine = Fungine::new(&Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
     let _next_states = engine.run();
 }
 

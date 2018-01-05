@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies.fungine]
 git = "https://github.com/mcgoddard/fungine.git"
-branch = "udp_worker"
+branch = "timed_update"
 
 [dependencies]
 cgmath = "0.14.1"
