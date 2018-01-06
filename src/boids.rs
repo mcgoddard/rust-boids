@@ -6,11 +6,13 @@ extern crate serde;
 use std::sync::Arc;
 use std::ops::{ Add, Sub, Div, Mul };
 use std::f32;
+use std::f32::consts::PI;
 use fungine::fungine::{GameObject, Message};
-use cgmath::{ Vector3, InnerSpace };
+use cgmath::{ Vector3, InnerSpace, Rad, Angle };
 
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
+const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
 
 fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
     ((second.x - first.x).powi(2) +
@@ -83,6 +85,12 @@ impl GameObject for Boid {
         new_direction = new_direction.add(align_vector);
         new_direction = new_direction.add(separation_vector);
         new_direction = new_direction.normalize();
+        let angle_between = new_direction.angle(self.direction);
+        let frame_angle = MAX_TURN * frame_time;
+        if angle_between > frame_angle {
+            let d_tick = ((self.direction.cross(new_direction)).cross(self.direction)).normalize();
+            new_direction = frame_angle.cos() * self.direction + frame_angle.sin() * d_tick;
+        }
         let new_position = self.position.add(new_direction.mul(frame_time));
         Box::new(Boid {
             position: new_position,
