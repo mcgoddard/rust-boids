@@ -17,10 +17,16 @@ use rand::Rng;
 
 #[allow(dead_code)]
 #[no_mangle]
-pub extern fn newSim() -> *mut Fungine {
+pub extern fn newSim500() -> *mut Fungine {
+    newSim(500)
+}
+
+#[allow(dead_code)]
+#[no_mangle]
+pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
-    let mut initial_state = Vec::new();
-    for i in 0i32..1000i32 {
+    let mut initial_state = Vec::with_capacity(boid_num);
+    for i in 0i32..boid_num as i32 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
             1 => BoidColourKind::Blue,
