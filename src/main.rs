@@ -14,7 +14,7 @@ use rand::Rng;
 fn main() {
     let mut rng = rand::thread_rng();
     let mut initial_state = Vec::new();
-    for i in 0i32..1000i32 {
+    for i in 0u64..1000u64 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
             1 => BoidColourKind::Blue,
@@ -32,12 +32,11 @@ fn main() {
         let initial_object = Boid {
             position: Vector3::new(x, y, z),
             direction: Vector3::new(x_dir, y_dr, z_dir).normalize(),
-            colour: boid_colour,
-            id: i
+            colour: boid_colour
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
-        initial_state.push(initial_object);
+        initial_state.push((i, initial_object));
     }
     let port = "4794";
     let engine = Fungine::new(&Arc::new(initial_state), Some(String::from_str(port)).unwrap().ok());
@@ -60,8 +59,7 @@ mod tests {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
                 direction: Vector3::new(1.0f32,1.0f32,1.0f32),
-                colour: BoidColourKind::Green,
-                id: i
+                colour: BoidColourKind::Green
             };
             let initial_object = Box::new(initial_object) as Box<GameObject>;
             let initial_object = Arc::new(initial_object);
@@ -80,8 +78,7 @@ mod tests {
             let initial_object = Boid {
                 position: Vector3::new(i as f32,i as f32,i as f32),
                 direction: Vector3::new(1.0f32,1.0f32,1.0f32),
-                colour: BoidColourKind::Green,
-                id: i
+                colour: BoidColourKind::Green
             };
             let initial_object = Box::new(initial_object) as Box<GameObject>;
             let initial_object = Arc::new(initial_object);

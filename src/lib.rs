@@ -26,7 +26,7 @@ pub extern fn newSim500() -> *mut Fungine {
 pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
     let mut initial_state = Vec::with_capacity(boid_num);
-    for i in 0i32..boid_num as i32 {
+    for i in 0u64..boid_num as u64 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
             1 => BoidColourKind::Blue,
@@ -44,12 +44,11 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
         let initial_object = Boid {
             position: Vector3::new(x, y, z),
             direction: Vector3::new(x_dir, y_dr, z_dir).normalize(),
-            colour: boid_colour,
-            id: i
+            colour: boid_colour
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
-        initial_state.push(initial_object);
+        initial_state.push((i, initial_object));
     }
     let engine = Fungine::new(&Arc::new(initial_state), None);
 
@@ -66,19 +65,18 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
 
 #[allow(dead_code)]
 #[no_mangle]
-pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> boids::Boid {
+pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> (u64, boids::Boid) {
     let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
-    if let Some(boid) = game_object.downcast_ref::<Boid>() {
-        *boid
+    if let Some(boid) = game_object.1.downcast_ref::<Boid>() {
+        (game_object.0, *boid)
     }
     else {
-        Boid {
+        (game_object.0, Boid {
             position: Vector3::new(0f32, 0f32, 0f32),
             direction: Vector3::new(0f32, 0f32, 0f32),
-            colour: BoidColourKind::Green,
-            id: 0
-        }
+            colour: BoidColourKind::Green
+        })
     }
 }
 

@@ -50,8 +50,7 @@ pub struct Boid {
     pub position: Vector3<f32>,
     #[serde(with = "Vector3Def")]
     pub direction: Vector3<f32>,
-    pub colour: BoidColourKind,
-    pub id: i32
+    pub colour: BoidColourKind
 }
 
 impl GameObject for Boid {
@@ -59,13 +58,13 @@ impl GameObject for Boid {
         Box::new(*self)
     }
 
-    fn update(&self, current_state: Arc<Vec<Arc<Box<GameObject>>>>, _messages: Vec<Message>, frame_time: f32) -> Box<GameObject> {
+    fn update(&self, current_state: Arc<Vec<(u64, Arc<Box<GameObject>>)>>, _messages: Vec<Box<Message>>, frame_time: f32) -> Box<GameObject> {
         let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut neighbour_count = 0.0f32;
         for boid in current_state.iter() {
-            let boid: Box<GameObject> = boid.box_clone();
+            let boid: Box<GameObject> = boid.1.box_clone();
             if let Some(boid) = boid.downcast_ref::<Boid>() {
                 let distance = euclidian_distance(boid.position, self.position);
                 if distance < NEIGHBOUR_DISTANCE {
@@ -95,8 +94,7 @@ impl GameObject for Boid {
         Box::new(Boid {
             position: new_position,
             direction: new_direction,
-            colour: self.colour,
-            id: self.id
+            colour: self.colour
         })
     }
 }
