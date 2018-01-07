@@ -15,6 +15,12 @@ use boids::{Boid, BoidColourKind};
 use cgmath::{ Vector3, InnerSpace };
 use rand::Rng;
 
+#[repr(C)]
+pub struct BoidObj {
+    pub id: u64,
+    pub boid: Boid
+}
+
 #[allow(dead_code)]
 #[no_mangle]
 pub extern fn newSim500() -> *mut Fungine {
@@ -65,18 +71,24 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
 
 #[allow(dead_code)]
 #[no_mangle]
-pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> (u64, boids::Boid) {
+pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> BoidObj {
     let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
     if let Some(boid) = game_object.1.downcast_ref::<Boid>() {
-        (game_object.0, *boid)
+        BoidObj {
+            id: game_object.0, 
+            boid: *boid
+        }
     }
     else {
-        (game_object.0, Boid {
-            position: Vector3::new(0f32, 0f32, 0f32),
-            direction: Vector3::new(0f32, 0f32, 0f32),
-            colour: BoidColourKind::Green
-        })
+        BoidObj {
+            id: game_object.0, 
+            boid: Boid {
+                position: Vector3::new(0f32, 0f32, 0f32),
+                direction: Vector3::new(0f32, 0f32, 0f32),
+                colour: BoidColourKind::Green
+            }
+        }
     }
 }
 
