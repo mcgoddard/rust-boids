@@ -1,13 +1,12 @@
 extern crate fungine;
 extern crate cgmath;
 extern crate stopwatch;
-extern crate serde;
 
 use std::sync::Arc;
 use std::ops::{ Add, Sub, Div, Mul };
 use std::f32;
 use std::f32::consts::PI;
-use fungine::fungine::{GameObject, Message};
+use fungine::fungine::{ GameObject, Message, GameObjectWithID };
 use cgmath::{ Vector3, InnerSpace, Rad, Angle };
 
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
@@ -20,20 +19,8 @@ fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
         (second.z - first.z).powi(2)).sqrt()
 }
 
-// Add serde serialization to cgmath's Vector3 type
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "Vector3")]
-struct Vector3Def<S> {
-    /// The x component of the vector.
-    pub x: S,
-    /// The y component of the vector.
-    pub y: S,
-    /// The z component of the vector.
-    pub z: S,
-}
-
 #[repr(C)]
-#[derive(Clone, Serialize, Deserialize, Copy)]
+#[derive(Clone, Copy)]
 pub enum BoidColourKind {
     Green,
     Blue,
@@ -44,11 +31,9 @@ pub enum BoidColourKind {
 }
 
 #[repr(C)]
-#[derive(Clone, Serialize, Deserialize, Copy)]
+#[derive(Clone, Copy)]
 pub struct Boid {
-    #[serde(with = "Vector3Def")]
     pub position: Vector3<f32>,
-    #[serde(with = "Vector3Def")]
     pub direction: Vector3<f32>,
     pub colour: BoidColourKind
 }
@@ -58,13 +43,13 @@ impl GameObject for Boid {
         Box::new(*self)
     }
 
-    fn update(&self, current_state: Arc<Vec<(u64, Arc<Box<GameObject>>)>>, _messages: Vec<Box<Message>>, frame_time: f32) -> Box<GameObject> {
+    fn update(&self, current_state: Arc<Vec<GameObjectWithID>>, _messages: Vec<Box<Message>>, frame_time: f32) -> Box<GameObject> {
         let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut neighbour_count = 0.0f32;
         for boid in current_state.iter() {
-            let boid: Box<GameObject> = boid.1.box_clone();
+            let boid: Box<GameObject> = boid.game_object.box_clone();
             if let Some(boid) = boid.downcast_ref::<Boid>() {
                 let distance = euclidian_distance(boid.position, self.position);
                 if distance < NEIGHBOUR_DISTANCE {

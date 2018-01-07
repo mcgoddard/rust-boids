@@ -19,6 +19,4 @@ branch = "messaging"
 [dependencies]
 cgmath = "0.14.1"
 stopwatch = "0.0.7"
-serde = "1.0"
-serde_derive = "1.0"
 rand = "0.3"

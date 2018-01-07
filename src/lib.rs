@@ -1,16 +1,13 @@
 extern crate fungine;
 extern crate cgmath;
 extern crate stopwatch;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
 extern crate rand;
 
 pub mod boids;
 
 use std::sync::Arc;
 use std::mem::transmute;
-use fungine::fungine::{Fungine, GameObject};
+use fungine::fungine::{ Fungine, GameObject, GameObjectWithID };
 use boids::{Boid, BoidColourKind};
 use cgmath::{ Vector3, InnerSpace };
 use rand::Rng;
@@ -54,9 +51,12 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
-        initial_state.push((i, initial_object));
+        initial_state.push(GameObjectWithID {
+            id: i, 
+            game_object: initial_object
+        });
     }
-    let engine = Fungine::new(&Arc::new(initial_state), None);
+    let engine = Fungine::new(&Arc::new(initial_state));
 
     unsafe { transmute(Box::new(engine)) }
 }
@@ -74,15 +74,15 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
 pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> BoidObj {
     let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
-    if let Some(boid) = game_object.1.downcast_ref::<Boid>() {
+    if let Some(boid) = game_object.game_object.downcast_ref::<Boid>() {
         BoidObj {
-            id: game_object.0, 
+            id: game_object.id, 
             boid: *boid
         }
     }
     else {
         BoidObj {
-            id: game_object.0, 
+            id: game_object.id, 
             boid: Boid {
                 position: Vector3::new(0f32, 0f32, 0f32),
                 direction: Vector3::new(0f32, 0f32, 0f32),
