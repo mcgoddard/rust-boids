@@ -6,12 +6,19 @@ use std::sync::Arc;
 use std::ops::{ Add, Sub, Div, Mul };
 use std::f32;
 use std::f32::consts::PI;
-use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult };
-use cgmath::{ Vector3, InnerSpace, Rad, Angle };
+use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult,
+                        Message };
+use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise };
 
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
+const MOUSE_SENSITIVITY: f32 = 5.0f32;
+const MOUSE_SMOOTHING: f32 = 2.0f32;
+const MOUSE_SCALE_VEC: Vector2<f32> = Vector2 {
+    x: MOUSE_SENSITIVITY * MOUSE_SMOOTHING,
+    y: MOUSE_SENSITIVITY * MOUSE_SMOOTHING
+};
 
 fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
     ((second.x - first.x).powi(2) +
@@ -110,14 +117,18 @@ unsafe impl Sync for Boid {}
 #[derive(Clone, Copy)]
 pub struct Player {
     pub position: Vector3<f32>,
-    pub direction: Vector3<f32>
+    pub direction: Vector3<f32>,
+    pub mouse_look: Vector2<f32>,
+    pub smooth_look: Vector2<f32>
 }
 
 impl Player {
     pub fn new() -> Self {
         Player {
             position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
-            direction: Vector3::new(0.0f32, 0.0f32, 0.0f32)
+            direction: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            mouse_look: Vector2::new(0.0f32, 0.0f32),
+            smooth_look: Vector2::new(0.0f32, 0.0f32)
         }
     }
 }
@@ -134,11 +145,35 @@ impl GameObject for Player {
     }
 
     fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
-            _messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
+            messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
+        let mut md = Vector2::new(0f32, 0f32);
+        let mut forward: f32 = 0.0f32;
+        let mut strafe: f32 = 0.0f32;
+        for message in messages.clone().iter() {
+            let message: Box<Message> = message.box_clone();
+            if let Some(message) = message.downcast_ref::<MoveMessage>() {
+                md += message.mouse_input;
+                forward = message.forward;
+                strafe = message.strafe;
+            }
+        }
+        md = md.mul_element_wise(MOUSE_SCALE_VEC);
+        let new_smooth_look = self.smooth_look.lerp(md, 1f32/MOUSE_SMOOTHING);
+        let mut new_mouse_look = self.mouse_look + new_smooth_look;
+        if new_mouse_look.y > 90f32 {
+            new_mouse_look = Vector2::new(new_mouse_look.x, 90f32);
+        }
+        else if new_mouse_look.y < -90f32 {
+            new_mouse_look = Vector2::new(new_mouse_look.x, -90f32);
+        }
+        let new_direction = self.direction;
+        let move_direction = Vector3::new(new_direction.x, 0f32, new_direction.z);
         UpdateResult {
             state: Box::new(Player {
-                position: self.position + (self.direction * frame_time),
-                direction: self.direction
+                position: self.position + (move_direction.mul(frame_time)),
+                direction: new_direction,
+                mouse_look: new_mouse_look,
+                smooth_look: new_smooth_look
             }),
             messages: vec![]
         }
@@ -146,3 +181,19 @@ impl GameObject for Player {
 }
 unsafe impl Send for Player {}
 unsafe impl Sync for Player {}
+
+#[repr(C)]
+#[derive(Clone, Debug)]
+struct MoveMessage {
+    pub forward: f32,
+    pub strafe: f32,
+    pub mouse_input: Vector2<f32>
+}
+
+impl Message for MoveMessage {
+    fn box_clone(&self) -> Box<Message> {
+        Box::new((*self).clone())
+    }
+}
+unsafe impl Send for MoveMessage {}
+unsafe impl Sync for MoveMessage {}

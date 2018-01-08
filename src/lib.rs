@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{ Fungine, GameObject, GameObjectWithID };
 use boids::{ Boid, BoidColourKind, Player };
-use cgmath::{ Vector3, InnerSpace };
+use cgmath::{ Vector3, InnerSpace, Vector2 };
 use rand::Rng;
 
 #[repr(C)]
@@ -68,7 +68,9 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     }
     let initial_object = Player {
         position: Vector3::new(0f32, 0f32, -10f32),
-        direction: Vector3::new(0f32, 0f32, 1f32)
+        direction: Vector3::new(0f32, 0f32, 1f32),
+        mouse_look: Vector2::new(0f32, 0f32),
+        smooth_look: Vector2::new(0f32, 0f32)
     };
     let initial_object = Box::new(initial_object) as Box<GameObject>;
     let initial_object = Arc::new(initial_object);
