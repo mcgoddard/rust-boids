@@ -8,14 +8,24 @@ pub mod boids;
 use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{ Fungine, GameObject, GameObjectWithID };
-use boids::{Boid, BoidColourKind};
+use boids::{ Boid, BoidColourKind, Player };
 use cgmath::{ Vector3, InnerSpace };
 use rand::Rng;
 
 #[repr(C)]
-pub struct BoidObj {
+pub struct ReturnObj {
     pub id: u64,
-    pub boid: Boid
+    pub obj_type: ObjType,
+    pub boid: Boid,
+    pub player: Player
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub enum ObjType {
+    Boid,
+    Player,
+    NoObj
 }
 
 #[allow(dead_code)]
@@ -71,25 +81,34 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
 
 #[allow(dead_code)]
 #[no_mangle]
-pub unsafe extern fn getBoid(sim_ptr: *mut Fungine, index: usize) -> BoidObj {
+pub unsafe extern fn getObj(sim_ptr: *mut Fungine, index: usize) -> ReturnObj {
     let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
-    if let Some(boid) = game_object.game_object.downcast_ref::<Boid>() {
-        BoidObj {
-            id: game_object.id, 
-            boid: *boid
-        }
+    let obj_type: ObjType;
+    let boid: Boid;
+    let player: Player;
+    if let Some(b) = game_object.game_object.downcast_ref::<Boid>() {
+        obj_type = ObjType::Boid;
+        boid = *b;
+        player = Default::default();
+    }
+    else if let Some(p) = game_object.game_object.downcast_ref::<Player>() {
+        obj_type = ObjType::Player;
+        boid = Default::default();
+        player = *p;
     }
     else {
-        BoidObj {
-            id: game_object.id, 
-            boid: Boid {
-                position: Vector3::new(0f32, 0f32, 0f32),
-                direction: Vector3::new(0f32, 0f32, 0f32),
-                colour: BoidColourKind::Green
-            }
-        }
+        obj_type = ObjType::NoObj;
+        boid = Default::default();
+        player = Default::default();
     }
+    ReturnObj {
+        id: game_object.id, 
+        obj_type:  obj_type,
+        boid: boid,
+        player: player
+    }
+
 }
 
 #[no_mangle]

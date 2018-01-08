@@ -38,6 +38,22 @@ pub struct Boid {
     pub colour: BoidColourKind
 }
 
+impl Boid {
+    pub fn new() -> Self {
+        Boid {
+            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            direction: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            colour: BoidColourKind::Green
+        }
+    }
+}
+
+impl Default for Boid {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameObject for Boid {
     fn box_clone(&self) -> Box<GameObject> {
         Box::new(*self)
@@ -89,3 +105,44 @@ impl GameObject for Boid {
 }
 unsafe impl Send for Boid {}
 unsafe impl Sync for Boid {}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Player {
+    pub position: Vector3<f32>,
+    pub direction: Vector3<f32>
+}
+
+impl Player {
+    pub fn new() -> Self {
+        Player {
+            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            direction: Vector3::new(0.0f32, 0.0f32, 0.0f32)
+        }
+    }
+}
+
+impl Default for Player {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GameObject for Player {
+    fn box_clone(&self) -> Box<GameObject> {
+        Box::new(*self)
+    }
+
+    fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
+            _messages: Arc<MessageList>, _frame_time: f32) -> UpdateResult {
+        UpdateResult {
+            state: Box::new(Player {
+                position: self.position,
+                direction: self.direction
+            }),
+            messages: vec![]
+        }
+    }
+}
+unsafe impl Send for Player {}
+unsafe impl Sync for Player {}
