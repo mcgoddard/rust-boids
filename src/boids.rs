@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::ops::{ Add, Sub, Div, Mul };
 use std::f32;
 use std::f32::consts::PI;
-use fungine::fungine::{ GameObject, Message, GameObjectWithID };
+use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult };
 use cgmath::{ Vector3, InnerSpace, Rad, Angle };
 
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
@@ -43,16 +43,17 @@ impl GameObject for Boid {
         Box::new(*self)
     }
 
-    fn update(&self, current_state: Arc<Vec<GameObjectWithID>>, _messages: Vec<Box<Message>>, frame_time: f32) -> Box<GameObject> {
+    fn update(&self, id: u64, current_state: Arc<Vec<GameObjectWithID>>, 
+            _messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
         let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut neighbour_count = 0.0f32;
-        for boid in current_state.iter() {
-            let boid: Box<GameObject> = boid.game_object.box_clone();
+        for object_pair in current_state.iter() {
+            let boid: Box<GameObject> = object_pair.game_object.box_clone();
             if let Some(boid) = boid.downcast_ref::<Boid>() {
                 let distance = euclidian_distance(boid.position, self.position);
-                if distance < NEIGHBOUR_DISTANCE {
+                if id != object_pair.id && distance < NEIGHBOUR_DISTANCE {
                     centre_vector = centre_vector.add(boid.position);
                     align_vector = align_vector.add(boid.direction);
                     neighbour_count += 1.0f32;
@@ -76,11 +77,14 @@ impl GameObject for Boid {
             new_direction = frame_angle.cos() * self.direction + frame_angle.sin() * d_tick;
         }
         let new_position = self.position.add(new_direction.mul(frame_time));
-        Box::new(Boid {
-            position: new_position,
-            direction: new_direction,
-            colour: self.colour
-        })
+        UpdateResult {
+            state: Box::new(Boid {
+                position: new_position,
+                direction: new_direction,
+                colour: self.colour
+            }),
+            messages: vec![]
+        }
     }
 }
 unsafe impl Send for Boid {}
