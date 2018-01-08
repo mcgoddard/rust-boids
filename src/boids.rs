@@ -134,10 +134,10 @@ impl GameObject for Player {
     }
 
     fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
-            _messages: Arc<MessageList>, _frame_time: f32) -> UpdateResult {
+            _messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
         UpdateResult {
             state: Box::new(Player {
-                position: self.position,
+                position: self.position + (self.direction * frame_time),
                 direction: self.direction
             }),
             messages: vec![]

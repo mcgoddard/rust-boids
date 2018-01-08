@@ -38,7 +38,7 @@ pub extern fn newSim500() -> *mut Fungine {
 #[no_mangle]
 pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
-    let mut initial_state = Vec::with_capacity(boid_num);
+    let mut initial_state = Vec::with_capacity(boid_num+1);
     for i in 0u64..boid_num as u64 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
@@ -66,6 +66,16 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
             game_object: initial_object
         });
     }
+    let initial_object = Player {
+        position: Vector3::new(0f32, 0f32, -10f32),
+        direction: Vector3::new(0f32, 0f32, 1f32)
+    };
+    let initial_object = Box::new(initial_object) as Box<GameObject>;
+    let initial_object = Arc::new(initial_object);
+    initial_state.push(GameObjectWithID {
+        id: boid_num as u64,
+        game_object: initial_object
+    });
     let engine = Fungine::new(&Arc::new(initial_state));
 
     unsafe { transmute(Box::new(engine)) }
