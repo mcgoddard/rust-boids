@@ -8,7 +8,8 @@ use std::f32;
 use std::f32::consts::PI;
 use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult,
                         Message };
-use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise };
+use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise, Deg, 
+              Quaternion, Rotation3, Rotation };
 
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
@@ -19,6 +20,9 @@ const MOUSE_SCALE_VEC: Vector2<f32> = Vector2 {
     x: MOUSE_SENSITIVITY * MOUSE_SMOOTHING,
     y: MOUSE_SENSITIVITY * MOUSE_SMOOTHING
 };
+const DIRECTION_RIGHT: Vector3<f32> = Vector3 { x: 1f32, y: 0f32, z: 0f32 };
+const DIRECTION_FORWARD: Vector3<f32> = Vector3 { x: 0f32, y: 0f32, z: 1f32 };
+const DIRECTION_UP: Vector3<f32> = Vector3 { x: 0f32, y: 1f32, z: 0f32 };
 
 fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
     ((second.x - first.x).powi(2) +
@@ -166,11 +170,20 @@ impl GameObject for Player {
         else if new_mouse_look.y < -90f32 {
             new_mouse_look = Vector2::new(new_mouse_look.x, -90f32);
         }
-        let new_direction = self.direction;
-        let move_direction = Vector3::new(new_direction.x, 0f32, new_direction.z);
+        let x_rotation = Quaternion::from_axis_angle(DIRECTION_RIGHT, Rad::from(Deg(-new_mouse_look.y)));
+        let y_rotation = Quaternion::from_axis_angle(DIRECTION_UP, Rad::from(Deg(new_mouse_look.x)));
+        let rotation = (x_rotation * y_rotation).normalize();
+        let new_direction = rotation.rotate_vector(DIRECTION_FORWARD);
+        let mut new_forward_direction = new_direction.mul(forward);
+        new_forward_direction.y -= new_forward_direction.y;
+        let mut new_strafe_direction = rotation.rotate_vector(DIRECTION_RIGHT).mul(strafe);
+        new_strafe_direction.y -= new_strafe_direction.y;
+        let mut new_position = self.position;
+        new_position = new_position + (new_forward_direction.mul(frame_time));
+        new_position = new_position + (new_strafe_direction.mul(frame_time));
         UpdateResult {
             state: Box::new(Player {
-                position: self.position + (move_direction.mul(frame_time)),
+                position: new_position,
                 direction: new_direction,
                 mouse_look: new_mouse_look,
                 smooth_look: new_smooth_look
