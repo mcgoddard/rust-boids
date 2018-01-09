@@ -210,3 +210,95 @@ impl Message for MoveMessage {
 }
 unsafe impl Send for MoveMessage {}
 unsafe impl Sync for MoveMessage {}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub enum PlaneKind {
+    Transparent,
+    Ground
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Plane {
+    pub position: Vector3<f32>,
+    pub direction: Vector3<f32>,
+    pub texturing: PlaneKind
+}
+
+impl Plane {
+    pub fn new() -> Self {
+        Plane {
+            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            direction: Vector3::new(0.0f32, 1.0f32, 0.0f32),
+            texturing: PlaneKind::Transparent
+        }
+    }
+}
+
+impl Default for Plane {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GameObject for Plane {
+    fn box_clone(&self) -> Box<GameObject> {
+        Box::new(*self)
+    }
+
+    fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
+            _messages: Arc<MessageList>, _frame_time: f32) -> UpdateResult {
+        UpdateResult {
+            state: Box::new(Plane {
+                position: self.position,
+                direction: self.direction,
+                texturing: self.texturing
+            }),
+            messages: vec![]
+        }
+    }
+}
+unsafe impl Send for Plane {}
+unsafe impl Sync for Plane {}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Tree {
+    pub position: Vector3<f32>,
+    pub direction: Vector3<f32>
+}
+
+impl Tree {
+    pub fn new() -> Self {
+        Tree {
+            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
+            direction: Vector3::new(0.0f32, 0.0f32, 1.0f32)
+        }
+    }
+}
+
+impl Default for Tree {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GameObject for Tree {
+    fn box_clone(&self) -> Box<GameObject> {
+        Box::new(*self)
+    }
+
+    fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
+            _messages: Arc<MessageList>, _frame_time: f32) -> UpdateResult {
+        UpdateResult {
+            state: Box::new(Tree {
+                position: self.position,
+                direction: self.direction
+            }),
+            messages: vec![]
+        }
+    }
+}
+unsafe impl Send for Tree {}
+unsafe impl Sync for Tree {}

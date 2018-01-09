@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{ Fungine, GameObject, GameObjectWithID, MessageWithID, 
                         Message };
-use boids::{ Boid, BoidColourKind, Player, MoveMessage };
+use boids::{ Boid, BoidColourKind, Player, MoveMessage, Plane, Tree };
 use cgmath::{ Vector3, InnerSpace, Vector2 };
 use rand::Rng;
 
@@ -18,7 +18,9 @@ pub struct ReturnObj {
     pub id: u64,
     pub obj_type: ObjType,
     pub boid: Boid,
-    pub player: Player
+    pub player: Player,
+    pub plane: Plane,
+    pub tree: Tree
 }
 
 #[repr(C)]
@@ -26,6 +28,8 @@ pub struct ReturnObj {
 pub enum ObjType {
     Boid,
     Player,
+    Plane,
+    Tree,
     NoObj
 }
 
@@ -97,31 +101,31 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
 pub unsafe extern fn getObj(sim_ptr: *mut Fungine, index: usize) -> ReturnObj {
     let sim = &mut *sim_ptr;
     let game_object = &sim.current_state[index];
-    let obj_type: ObjType;
-    let boid: Boid;
-    let player: Player;
+    let mut return_obj = ReturnObj {
+        id: game_object.id,
+        obj_type:  ObjType::NoObj,
+        boid: Default::default(),
+        player: Default::default(),
+        plane: Default::default(),
+        tree: Default::default()
+    };
     if let Some(b) = game_object.game_object.downcast_ref::<Boid>() {
-        obj_type = ObjType::Boid;
-        boid = *b;
-        player = Default::default();
+        return_obj.obj_type = ObjType::Boid;
+        return_obj.boid = *b;
     }
     else if let Some(p) = game_object.game_object.downcast_ref::<Player>() {
-        obj_type = ObjType::Player;
-        boid = Default::default();
-        player = *p;
+        return_obj.obj_type = ObjType::Player;
+        return_obj.player = *p;
     }
-    else {
-        obj_type = ObjType::NoObj;
-        boid = Default::default();
-        player = Default::default();
+    else if let Some(pl) = game_object.game_object.downcast_ref::<Plane>() {
+        return_obj.obj_type = ObjType::Plane;
+        return_obj.plane = *pl;
     }
-    ReturnObj {
-        id: game_object.id, 
-        obj_type:  obj_type,
-        boid: boid,
-        player: player
+    else if let Some(t) = game_object.game_object.downcast_ref::<Tree>() {
+        return_obj.obj_type = ObjType::Tree;
+        return_obj.tree = *t;
     }
-
+    return_obj
 }
 
 #[allow(dead_code)]
