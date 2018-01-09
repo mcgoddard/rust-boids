@@ -9,9 +9,10 @@ use std::sync::Arc;
 use std::mem::transmute;
 use fungine::fungine::{ Fungine, GameObject, GameObjectWithID, MessageWithID, 
                         Message };
-use boids::{ Boid, BoidColourKind, Player, MoveMessage, Plane, Tree };
+use boids::{ Boid, BoidColourKind, Player, MoveMessage, Plane, Tree, PlaneKind };
 use cgmath::{ Vector3, InnerSpace, Vector2 };
 use rand::Rng;
+use rand::ThreadRng;
 
 #[repr(C)]
 pub struct ReturnObj {
@@ -43,7 +44,22 @@ pub extern fn newSim500() -> *mut Fungine {
 #[no_mangle]
 pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
-    let mut initial_state = Vec::with_capacity(boid_num+1);
+    let num_players = 1usize;
+    let num_planes = 6usize;
+    let num_trees = 10usize;
+    let num_objects = boid_num + num_players + num_trees + num_planes;
+    let mut initial_state: Vec<GameObjectWithID> = Vec::with_capacity(num_objects);
+    set_up_boids(boid_num, &mut initial_state, &mut rng);
+    set_up_player(boid_num as u64, &mut initial_state);
+    set_up_planes((boid_num + num_players) as u64, &mut initial_state);
+    set_up_trees((boid_num + num_players + num_planes) as u64, num_trees as u64, 
+        &mut initial_state, &mut rng);
+    let engine = Fungine::new(&Arc::new(initial_state));
+
+    unsafe { transmute(Box::new(engine)) }
+}
+
+fn set_up_boids(boid_num: usize, states: &mut Vec<GameObjectWithID>, rng: &mut ThreadRng) {
     for i in 0u64..boid_num as u64 {
         let boid_colour = match i % 6 {
             0 => BoidColourKind::Green,
@@ -53,39 +69,113 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
             4 => BoidColourKind::Purple,
             _ => BoidColourKind::Yellow,
         };
-        let x = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
-        let y = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
-        let z = (((rng.gen::<u32>() % 300) as f32) / 10.0) - 15.0;
-        let x_dir = rng.gen::<f32>() - 0.5f32;
-        let y_dr = rng.gen::<f32>() - 0.5f32;
-        let z_dir = rng.gen::<f32>() - 0.5f32;
+        let x = rng.gen_range::<f32>(5f32, 95f32);
+        let y = rng.gen_range::<f32>(5f32, 95f32);
+        let z = rng.gen_range::<f32>(5f32, 95f32);
+        let x_dir = rng.gen_range::<f32>(-1f32, 1f32);
+        let z_dir = rng.gen_range::<f32>(-1f32, 1f32);
         let initial_object = Boid {
             position: Vector3::new(x, y, z),
-            direction: Vector3::new(x_dir, y_dr, z_dir).normalize(),
+            direction: Vector3::new(x_dir, 0f32, z_dir).normalize(),
             colour: boid_colour
         };
         let initial_object = Box::new(initial_object) as Box<GameObject>;
         let initial_object = Arc::new(initial_object);
-        initial_state.push(GameObjectWithID {
+        states.push(GameObjectWithID {
             id: i, 
             game_object: initial_object
         });
     }
+}
+
+fn set_up_player(id: u64, states: &mut Vec<GameObjectWithID>) {
     let initial_object = Player {
-        position: Vector3::new(0f32, 0f32, -10f32),
+        position: Vector3::new(50f32, 1f32, 50f32),
         direction: Vector3::new(0f32, 0f32, 1f32),
         mouse_look: Vector2::new(0f32, 0f32),
         smooth_look: Vector2::new(0f32, 0f32)
     };
     let initial_object = Box::new(initial_object) as Box<GameObject>;
     let initial_object = Arc::new(initial_object);
-    initial_state.push(GameObjectWithID {
-        id: boid_num as u64,
+    states.push(GameObjectWithID {
+        id: id,
         game_object: initial_object
     });
-    let engine = Fungine::new(&Arc::new(initial_state));
+}
 
-    unsafe { transmute(Box::new(engine)) }
+fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
+    let ground = GameObjectWithID {
+        id: start_id,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(50f32, 0f32, 50f32),
+            direction: Vector3::new(0f32, 1f32, 0f32),
+            texturing: PlaneKind::Ground
+        }) as Box<GameObject>)
+    };
+    states.push(ground);
+    let ceiling = GameObjectWithID {
+        id: start_id + 1,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(50f32, 100f32, 50f32),
+            direction: Vector3::new(0f32, -1f32, 0f32),
+            texturing: PlaneKind::Transparent
+        }) as Box<GameObject>)
+    };
+    states.push(ceiling);
+    let wall = GameObjectWithID {
+        id: start_id + 2,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(0f32, 50f32, 50f32),
+            direction: Vector3::new(1f32, 0f32, 0f32),
+            texturing: PlaneKind::Transparent
+        }) as Box<GameObject>)
+    };
+    states.push(wall);
+    let wall = GameObjectWithID {
+        id: start_id + 3,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(100f32, 50f32, 50f32),
+            direction: Vector3::new(-1f32, 0f32, 0f32),
+            texturing: PlaneKind::Transparent
+        }) as Box<GameObject>)
+    };
+    states.push(wall);
+    let wall = GameObjectWithID {
+        id: start_id + 4,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(50f32, 50f32, 0f32),
+            direction: Vector3::new(0f32, 0f32, 1f32),
+            texturing: PlaneKind::Transparent
+        }) as Box<GameObject>)
+    };
+    states.push(wall);
+    let wall = GameObjectWithID {
+        id: start_id + 5,
+        game_object: Arc::new(Box::new(Plane {
+            position: Vector3::new(50f32, 50f32, 100f32),
+            direction: Vector3::new(0f32, 0f32, -1f32),
+            texturing: PlaneKind::Transparent
+        }) as Box<GameObject>)
+    };
+    states.push(wall);
+}
+
+fn set_up_trees(start_id: u64, num_trees: u64, states: &mut Vec<GameObjectWithID>,
+    rng: &mut ThreadRng) {
+    for i in 0u64..num_trees as u64 {
+        let x = rng.gen_range::<f32>(5f32, 95f32);
+        let z = rng.gen_range::<f32>(5f32, 95f32);
+        let x_dir = rng.gen_range::<f32>(-1f32, 1f32);
+        let z_dir = rng.gen_range::<f32>(-1f32, 1f32);
+        let initial_object = Arc::new(Box::new(Tree {
+            position: Vector3::new(x, 0f32, z),
+            direction: Vector3::new(x_dir, 0f32, z_dir).normalize()
+        }) as Box<GameObject>);
+        states.push(GameObjectWithID {
+            id: start_id + i,
+            game_object: initial_object
+        });
+    }
 }
 
 #[allow(dead_code)]
