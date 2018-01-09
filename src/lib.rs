@@ -7,8 +7,9 @@ pub mod boids;
 
 use std::sync::Arc;
 use std::mem::transmute;
-use fungine::fungine::{ Fungine, GameObject, GameObjectWithID };
-use boids::{ Boid, BoidColourKind, Player };
+use fungine::fungine::{ Fungine, GameObject, GameObjectWithID, MessageWithID, 
+                        Message };
+use boids::{ Boid, BoidColourKind, Player, MoveMessage };
 use cgmath::{ Vector3, InnerSpace, Vector2 };
 use rand::Rng;
 
@@ -121,6 +122,23 @@ pub unsafe extern fn getObj(sim_ptr: *mut Fungine, index: usize) -> ReturnObj {
         player: player
     }
 
+}
+
+#[allow(dead_code)]
+#[no_mangle]
+pub unsafe extern fn addMovement(sim_ptr: *mut Fungine, id: u64, forward: f32, 
+    strafe: f32, mouse: Vector2<f32>) {
+    let sim: &mut Fungine = &mut *sim_ptr;
+    let message: Arc<Box<Message>> = Arc::new(Box::new(MoveMessage {
+        forward: forward,
+        strafe: strafe,
+        mouse_input: mouse
+    }));
+    let message_pair = MessageWithID {
+        id: id,
+        message: message
+    };
+    sim.push_message(message_pair);
 }
 
 #[no_mangle]

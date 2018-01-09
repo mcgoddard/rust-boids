@@ -197,7 +197,7 @@ unsafe impl Sync for Player {}
 
 #[repr(C)]
 #[derive(Clone, Debug)]
-struct MoveMessage {
+pub struct MoveMessage {
     pub forward: f32,
     pub strafe: f32,
     pub mouse_input: Vector2<f32>
