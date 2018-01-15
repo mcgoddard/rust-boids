@@ -174,7 +174,7 @@ impl GameObject for Player {
         }
         let x_rotation = Quaternion::from_axis_angle(DIRECTION_RIGHT, Rad::from(Deg(-new_mouse_look.y)));
         let y_rotation = Quaternion::from_axis_angle(DIRECTION_UP, Rad::from(Deg(new_mouse_look.x)));
-        let rotation = (x_rotation * y_rotation).normalize();
+        let rotation = (y_rotation * x_rotation).normalize();
         let new_direction = rotation.rotate_vector(DIRECTION_FORWARD);
         let mut new_forward_direction = new_direction.mul(forward);
         new_forward_direction.y -= new_forward_direction.y;
