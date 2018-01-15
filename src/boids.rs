@@ -14,7 +14,7 @@ use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise, Deg,
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
-const MOUSE_SENSITIVITY: f32 = 5.0f32;
+const MOUSE_SENSITIVITY: f32 = 4.0f32;
 const MOUSE_SMOOTHING: f32 = 2.0f32;
 const MOUSE_SCALE_VEC: Vector2<f32> = Vector2 {
     x: MOUSE_SENSITIVITY * MOUSE_SMOOTHING,
@@ -75,7 +75,7 @@ impl GameObject for Boid {
         let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
         let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
-        let mut neighbour_count = 0.0f32;
+        let mut neighbour_count = 0u32;
         for object_pair in current_state.iter() {
             let boid: Box<GameObject> = object_pair.game_object.box_clone();
             if let Some(boid) = boid.downcast_ref::<Boid>() {
@@ -83,15 +83,17 @@ impl GameObject for Boid {
                 if id != object_pair.id && distance < NEIGHBOUR_DISTANCE {
                     centre_vector = centre_vector.add(boid.position);
                     align_vector = align_vector.add(boid.direction);
-                    neighbour_count += 1.0f32;
+                    neighbour_count += 1;
                     if distance < SEPARATION_DISTANCE {
                         separation_vector = separation_vector.sub(boid.position.sub(self.position))
                     }
                 }
             }
         }
-        centre_vector = centre_vector.div(neighbour_count as f32).sub(self.position).div(100.0f32);
-        align_vector = align_vector.div(neighbour_count as f32).sub(self.direction).div(8.0f32);
+        if neighbour_count > 0 {
+            centre_vector = centre_vector.div(neighbour_count as f32).sub(self.position).div(100.0f32);
+            align_vector = align_vector.div(neighbour_count as f32).sub(self.direction).div(8.0f32);
+        }
         let mut new_direction = self.direction;
         new_direction = new_direction.add(centre_vector);
         new_direction = new_direction.add(align_vector);
