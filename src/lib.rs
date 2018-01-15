@@ -15,6 +15,8 @@ use cgmath::{ Vector3, InnerSpace, Vector2, Rad, Quaternion, Rotation3 };
 use rand::Rng;
 use rand::ThreadRng;
 
+// Allow the return of game state objects by combining the ID, type and object fields
+// TODO pretty wasteful
 #[repr(C)]
 pub struct ReturnObj {
     pub id: u64,
@@ -25,6 +27,7 @@ pub struct ReturnObj {
     pub tree: Tree
 }
 
+// The different types of objects that can be returned
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum ObjType {
@@ -35,12 +38,14 @@ pub enum ObjType {
     NoObj
 }
 
+// Create a new simulator with 500 boids and return a reference
 #[allow(dead_code)]
 #[no_mangle]
 pub extern fn newSim500() -> *mut Fungine {
     newSim(500)
 }
 
+// Create a new simulator with the specified numner of boids and return a reference
 #[allow(dead_code)]
 #[no_mangle]
 pub extern fn newSim(boid_num: usize) -> *mut Fungine {
@@ -60,6 +65,7 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     unsafe { transmute(Box::new(engine)) }
 }
 
+// Create the specified number of boids with randomised states and add them to the states vector
 fn set_up_boids(boid_num: usize, states: &mut Vec<GameObjectWithID>, rng: &mut ThreadRng) {
     for i in 0u64..boid_num as u64 {
         let boid_colour = match i % 6 {
@@ -89,6 +95,7 @@ fn set_up_boids(boid_num: usize, states: &mut Vec<GameObjectWithID>, rng: &mut T
     }
 }
 
+// Create a player with the specified ID and add it to the states vector
 fn set_up_player(id: u64, states: &mut Vec<GameObjectWithID>) {
     let initial_object = Player {
         position: Vector3::new(50f32, 1f32, 50f32),
@@ -104,6 +111,7 @@ fn set_up_player(id: u64, states: &mut Vec<GameObjectWithID>) {
     });
 }
 
+// Create floor and walls planes and add them to the states vector
 fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
     let ground = GameObjectWithID {
         id: start_id,
@@ -161,6 +169,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
     states.push(wall);
 }
 
+// Create the specified number of trees and add them to the states vectors
 fn set_up_trees(start_id: u64, num_trees: u64, states: &mut Vec<GameObjectWithID>,
     rng: &mut ThreadRng) {
     for i in 0u64..num_trees as u64 {
@@ -179,6 +188,7 @@ fn set_up_trees(start_id: u64, num_trees: u64, states: &mut Vec<GameObjectWithID
     }
 }
 
+// Step the passed engine forward once with the specified frame time
 #[allow(dead_code)]
 #[no_mangle]
 pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
@@ -187,6 +197,7 @@ pub unsafe extern fn step(sim_ptr: *mut Fungine, frame_time: f32) -> usize {
     sim.current_state.len()
 }
 
+// Get the object at the specified index from the passed engine
 #[allow(dead_code)]
 #[no_mangle]
 pub unsafe extern fn getObj(sim_ptr: *mut Fungine, index: usize) -> ReturnObj {
@@ -219,6 +230,7 @@ pub unsafe extern fn getObj(sim_ptr: *mut Fungine, index: usize) -> ReturnObj {
     return_obj
 }
 
+// Pass a movement message into the specified engine
 #[allow(dead_code)]
 #[no_mangle]
 pub unsafe extern fn addMovement(sim_ptr: *mut Fungine, id: u64, forward: f32, 
@@ -236,6 +248,7 @@ pub unsafe extern fn addMovement(sim_ptr: *mut Fungine, id: u64, forward: f32,
     sim.push_message(message_pair);
 }
 
+// Free the memory for the passed engine, the reference passed will no longer be valid
 #[no_mangle]
 pub unsafe extern fn destroySim(sim_ptr: *mut Fungine) {
     let _sim: Box<Fungine> = transmute(sim_ptr);

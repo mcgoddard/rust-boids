@@ -26,12 +26,19 @@ pub const DIRECTION_RIGHT: Vector3<f32> = Vector3 { x: 1f32, y: 0f32, z: 0f32 };
 pub const DIRECTION_FORWARD: Vector3<f32> = Vector3 { x: 0f32, y: 0f32, z: 1f32 };
 pub const DIRECTION_UP: Vector3<f32> = Vector3 { x: 0f32, y: 1f32, z: 0f32 };
 
+// Get the euclidian distance between two points
 fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
     ((second.x - first.x).powi(2) +
         (second.y - first.y).powi(2) +
         (second.z - first.z).powi(2)).sqrt()
 }
 
+// Get the shortest distance from a point to a plane
+fn plane_distance(object_point: Vector3<f32>, plane_point: Vector3<f32>, plane_rotation: Quaternion) -> f32 {
+
+}
+
+// The different colours a boid can be
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum BoidColourKind {
@@ -43,6 +50,7 @@ pub enum BoidColourKind {
     Yellow
 }
 
+// Represent a boid with a position, direction and colour
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Boid {
@@ -121,6 +129,7 @@ impl GameObject for Boid {
 unsafe impl Send for Boid {}
 unsafe impl Sync for Boid {}
 
+// Represent a player with a position, direction and turn adjustments
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Player {
@@ -199,6 +208,7 @@ impl GameObject for Player {
 unsafe impl Send for Player {}
 unsafe impl Sync for Player {}
 
+// A message representing the current user input state
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct MoveMessage {
@@ -215,6 +225,7 @@ impl Message for MoveMessage {
 unsafe impl Send for MoveMessage {}
 unsafe impl Sync for MoveMessage {}
 
+// The different types of plane: ground for the floor and transparent for the walls and ceiling
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum PlaneKind {
@@ -222,6 +233,7 @@ pub enum PlaneKind {
     Ground
 }
 
+// Represent a plane with a position, rotation and texturing type
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Plane {
@@ -266,6 +278,7 @@ impl GameObject for Plane {
 unsafe impl Send for Plane {}
 unsafe impl Sync for Plane {}
 
+// Represent a tree with a position and direction
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Tree {

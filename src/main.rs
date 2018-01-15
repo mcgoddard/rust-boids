@@ -10,6 +10,7 @@ use fungine::fungine::{ Fungine, GameObject, GameObjectWithID };
 use cgmath::{ Vector3, InnerSpace };
 use rand::Rng;
 
+// Start the boids simulation up with 1000 boids
 fn main() {
     let mut rng = rand::thread_rng();
     let mut initial_state = Vec::new();
@@ -67,29 +68,6 @@ mod tests {
                 id: i,
                 game_object: initial_object
             });
-        }
-        let engine = Fungine::new(&Arc::new(initial_state));
-        let sw = Stopwatch::start_new();
-        let _final_states = engine.run_steps(60, 1f32);
-        println!("Time taken: {}ms", sw.elapsed_ms());
-    }
-
-    #[test]
-    fn speed_with_networking_test() {
-        let mut initial_state = Vec::new();
-        for i in 0u64..500u64 {
-            let initial_object = Boid {
-                position: Vector3::new(i as f32,i as f32,i as f32),
-                direction: Vector3::new(1.0f32,1.0f32,1.0f32),
-                colour: BoidColourKind::Green
-            };
-            let initial_object = Box::new(initial_object) as Box<GameObject>;
-            let initial_object = Arc::new(initial_object);
-            let initial_object = GameObjectWithID {
-                id: i,
-                game_object: initial_object
-            };
-            initial_state.push(initial_object);
         }
         let engine = Fungine::new(&Arc::new(initial_state));
         let sw = Stopwatch::start_new();
