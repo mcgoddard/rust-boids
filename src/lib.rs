@@ -7,10 +7,11 @@ pub mod boids;
 
 use std::sync::Arc;
 use std::mem::transmute;
+use std::f32::consts::PI;
 use fungine::fungine::{ Fungine, GameObject, GameObjectWithID, MessageWithID, 
                         Message };
 use boids::{ Boid, BoidColourKind, Player, MoveMessage, Plane, Tree, PlaneKind };
-use cgmath::{ Vector3, InnerSpace, Vector2 };
+use cgmath::{ Vector3, InnerSpace, Vector2, Rad, Quaternion, Rotation3 };
 use rand::Rng;
 use rand::ThreadRng;
 
@@ -108,7 +109,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(50f32, 0f32, 50f32),
-            direction: Vector3::new(0f32, 0f32, 1f32),
+            direction: Quaternion::new(0f32, 0f32, 0f32, 0f32),
             texturing: PlaneKind::Ground
         }) as Box<GameObject>)
     };
@@ -117,7 +118,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 1,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(50f32, 100f32, 50f32),
-            direction: Vector3::new(0f32, 0f32, -1f32),
+            direction: Quaternion::from_angle_x(Rad(PI)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };
@@ -126,7 +127,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 2,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(0f32, 50f32, 50f32),
-            direction: Vector3::new(1f32, 0f32, 0f32),
+            direction: Quaternion::from_angle_x(Rad(PI/2f32)) * Quaternion::from_angle_z(Rad(PI/2f32)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };
@@ -135,7 +136,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 3,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(100f32, 50f32, 50f32),
-            direction: Vector3::new(1f32, 0f32, 0f32),
+            direction: Quaternion::from_angle_x(Rad((3f32*PI)/2f32)) * Quaternion::from_angle_z(Rad(PI/2f32)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };
@@ -144,7 +145,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 4,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(50f32, 50f32, 0f32),
-            direction: Vector3::new(0f32, 1f32, 0f32),
+            direction: Quaternion::from_angle_x(Rad(PI/2f32)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };
@@ -153,7 +154,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 5,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(50f32, 50f32, 100f32),
-            direction: Vector3::new(0f32, 1f32, 0f32),
+            direction: Quaternion::from_angle_x(Rad((3f32*PI)/2f32)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };

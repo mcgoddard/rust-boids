@@ -222,15 +222,15 @@ pub enum PlaneKind {
 #[derive(Clone, Copy)]
 pub struct Plane {
     pub position: Vector3<f32>,
-    pub direction: Vector3<f32>,
+    pub direction: Quaternion<f32>,
     pub texturing: PlaneKind
 }
 
 impl Plane {
     pub fn new() -> Self {
         Plane {
-            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
-            direction: Vector3::new(0.0f32, 1.0f32, 0.0f32),
+            position: Vector3::new(0f32, 0f32, 0f32),
+            direction: Quaternion::new(0f32, 0f32, 0f32, 0f32),
             texturing: PlaneKind::Transparent
         }
     }
