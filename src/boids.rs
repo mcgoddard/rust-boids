@@ -20,9 +20,9 @@ const MOUSE_SCALE_VEC: Vector2<f32> = Vector2 {
     x: MOUSE_SENSITIVITY * MOUSE_SMOOTHING,
     y: MOUSE_SENSITIVITY * MOUSE_SMOOTHING
 };
-const DIRECTION_RIGHT: Vector3<f32> = Vector3 { x: 1f32, y: 0f32, z: 0f32 };
-const DIRECTION_FORWARD: Vector3<f32> = Vector3 { x: 0f32, y: 0f32, z: 1f32 };
-const DIRECTION_UP: Vector3<f32> = Vector3 { x: 0f32, y: 1f32, z: 0f32 };
+pub const DIRECTION_RIGHT: Vector3<f32> = Vector3 { x: 1f32, y: 0f32, z: 0f32 };
+pub const DIRECTION_FORWARD: Vector3<f32> = Vector3 { x: 0f32, y: 0f32, z: 1f32 };
+pub const DIRECTION_UP: Vector3<f32> = Vector3 { x: 0f32, y: 1f32, z: 0f32 };
 
 fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
     ((second.x - first.x).powi(2) +
