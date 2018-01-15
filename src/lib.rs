@@ -47,7 +47,7 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
     let num_players = 1usize;
     let num_planes = 6usize;
-    let num_trees = 100usize;
+    let num_trees = 300usize;
     let num_objects = boid_num + num_players + num_trees + num_planes;
     let mut initial_state: Vec<GameObjectWithID> = Vec::with_capacity(num_objects);
     set_up_boids(boid_num, &mut initial_state, &mut rng);
