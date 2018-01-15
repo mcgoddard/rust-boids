@@ -34,8 +34,8 @@ fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
 }
 
 // Get the shortest distance from a point to a plane
-fn plane_distance(object_point: Vector3<f32>, plane_point: Vector3<f32>, plane_rotation: Quaternion) -> f32 {
-
+fn point_to_plane_distance(object_point: Vector3<f32>, plane_point: Vector3<f32>, plane_rotation: Quaternion<f32>) -> f32 {
+    (object_point.sub(plane_point)).dot(plane_rotation.rotate_vector(DIRECTION_UP))
 }
 
 // The different colours a boid can be
