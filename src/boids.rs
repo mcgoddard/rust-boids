@@ -12,6 +12,7 @@ use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise, Deg,
               Quaternion, Rotation3, Rotation };
 
 const PLAYER_SPEED: f32 = 2.0;
+const BOID_SPEED: f32 = 4.0;
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
@@ -106,7 +107,7 @@ impl GameObject for Boid {
             let d_tick = ((self.direction.cross(new_direction)).cross(self.direction)).normalize();
             new_direction = frame_angle.cos() * self.direction + frame_angle.sin() * d_tick;
         }
-        let new_position = self.position.add(new_direction.mul(frame_time));
+        let new_position = self.position.add(new_direction.mul(frame_time).mul(BOID_SPEED));
         UpdateResult {
             state: Box::new(Boid {
                 position: new_position,
