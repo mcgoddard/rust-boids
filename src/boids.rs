@@ -11,6 +11,7 @@ use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult,
 use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise, Deg, 
               Quaternion, Rotation3, Rotation };
 
+const PLAYER_SPEED: f32 = 2.0;
 const NEIGHBOUR_DISTANCE: f32 = 10.0;
 const SEPARATION_DISTANCE: f32 = 1.0;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
@@ -181,8 +182,8 @@ impl GameObject for Player {
         let mut new_strafe_direction = rotation.rotate_vector(DIRECTION_RIGHT).mul(strafe);
         new_strafe_direction.y -= new_strafe_direction.y;
         let mut new_position = self.position;
-        new_position = new_position + (new_forward_direction.mul(frame_time));
-        new_position = new_position + (new_strafe_direction.mul(frame_time));
+        new_position = new_position + (new_forward_direction.mul(frame_time).mul(PLAYER_SPEED));
+        new_position = new_position + (new_strafe_direction.mul(frame_time).mul(PLAYER_SPEED));
         UpdateResult {
             state: Box::new(Player {
                 position: new_position,
