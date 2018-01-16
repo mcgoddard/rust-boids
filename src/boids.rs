@@ -11,13 +11,14 @@ use fungine::fungine::{ GameObject, GameObjectWithID, MessageList, UpdateResult,
 use cgmath::{ Vector3, Vector2, InnerSpace, Rad, Angle, ElementWise, Deg, 
               Quaternion, Rotation3, Rotation };
 
-const PLAYER_SPEED: f32 = 2.0;
-const BOID_SPEED: f32 = 4.0;
-const NEIGHBOUR_DISTANCE: f32 = 10.0;
-const SEPARATION_DISTANCE: f32 = 1.0;
+const PLAYER_SPEED: f32 = 2f32;
+const BOID_SPEED: f32 = 4f32;
+const NEIGHBOUR_DISTANCE: f32 = 10f32;
+const SEPARATION_DISTANCE: f32 = 1f32;
+const BOID_PLANE_DISTANCE: f32 = 5f32;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
-const MOUSE_SENSITIVITY: f32 = 4.0f32;
-const MOUSE_SMOOTHING: f32 = 2.0f32;
+const MOUSE_SENSITIVITY: f32 = 4f32;
+const MOUSE_SMOOTHING: f32 = 2f32;
 const MOUSE_SCALE_VEC: Vector2<f32> = Vector2 {
     x: MOUSE_SENSITIVITY * MOUSE_SMOOTHING,
     y: MOUSE_SENSITIVITY * MOUSE_SMOOTHING
@@ -34,8 +35,8 @@ fn euclidian_distance(first: Vector3<f32>, second: Vector3<f32>) -> f32 {
 }
 
 // Get the shortest distance from a point to a plane
-fn point_to_plane_distance(object_point: Vector3<f32>, plane_point: Vector3<f32>, plane_rotation: Quaternion<f32>) -> f32 {
-    (object_point.sub(plane_point)).dot(plane_rotation.rotate_vector(DIRECTION_UP))
+fn point_to_plane_distance(object_point: Vector3<f32>, plane_point: Vector3<f32>, plane_normal: Vector3<f32>) -> f32 {
+    (object_point.sub(plane_point)).dot(plane_normal.div(plane_normal.magnitude())).abs()
 }
 
 // The different colours a boid can be
@@ -82,13 +83,14 @@ impl GameObject for Boid {
 
     fn update(&self, id: u64, current_state: Arc<Vec<GameObjectWithID>>, 
             _messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
-        let mut centre_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
-        let mut align_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
-        let mut separation_vector = Vector3::new(0.0f32, 0.0f32, 0.0f32);
+        let mut centre_vector = Vector3::new(0f32, 0f32, 0f32);
+        let mut align_vector = Vector3::new(0f32, 0f32, 0f32);
+        let mut separation_vector = Vector3::new(0f32, 0f32, 0f32);
         let mut neighbour_count = 0u32;
+        let mut repel_vector = Vector3::new(0f32, 0f32, 0f32);
         for object_pair in current_state.iter() {
-            let boid: Box<GameObject> = object_pair.game_object.box_clone();
-            if let Some(boid) = boid.downcast_ref::<Boid>() {
+            let object: Box<GameObject> = object_pair.game_object.box_clone();
+            if let Some(boid) = object.downcast_ref::<Boid>() {
                 let distance = euclidian_distance(boid.position, self.position);
                 if id != object_pair.id && distance < NEIGHBOUR_DISTANCE {
                     centre_vector = centre_vector.add(boid.position);
@@ -97,6 +99,12 @@ impl GameObject for Boid {
                     if distance < SEPARATION_DISTANCE {
                         separation_vector = separation_vector.sub(boid.position.sub(self.position))
                     }
+                }
+            }
+            else if let Some(plane) = object.downcast_ref::<Plane>() {
+                let plane_normal = plane.direction.rotate_vector(DIRECTION_UP);
+                if BOID_PLANE_DISTANCE > point_to_plane_distance(self.position, plane.position, plane_normal) {
+                    repel_vector = repel_vector.add(plane_normal);
                 }
             }
         }
@@ -108,6 +116,7 @@ impl GameObject for Boid {
         new_direction = new_direction.add(centre_vector);
         new_direction = new_direction.add(align_vector);
         new_direction = new_direction.add(separation_vector);
+        new_direction = new_direction.add(repel_vector);
         new_direction = new_direction.normalize();
         let angle_between = new_direction.angle(self.direction);
         let frame_angle = MAX_TURN * frame_time;
@@ -142,10 +151,10 @@ pub struct Player {
 impl Player {
     pub fn new() -> Self {
         Player {
-            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
-            direction: Vector3::new(0.0f32, 0.0f32, 0.0f32),
-            mouse_look: Vector2::new(0.0f32, 0.0f32),
-            smooth_look: Vector2::new(0.0f32, 0.0f32)
+            position: Vector3::new(0f32, 0f32, 0f32),
+            direction: Vector3::new(0f32, 0f32, 0f32),
+            mouse_look: Vector2::new(0f32, 0f32),
+            smooth_look: Vector2::new(0f32, 0f32)
         }
     }
 }
@@ -164,8 +173,8 @@ impl GameObject for Player {
     fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
             messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
         let mut md = Vector2::new(0f32, 0f32);
-        let mut forward: f32 = 0.0f32;
-        let mut strafe: f32 = 0.0f32;
+        let mut forward: f32 = 0f32;
+        let mut strafe: f32 = 0f32;
         for message in messages.clone().iter() {
             let message: Box<Message> = message.box_clone();
             if let Some(message) = message.downcast_ref::<MoveMessage>() {
@@ -289,8 +298,8 @@ pub struct Tree {
 impl Tree {
     pub fn new() -> Self {
         Tree {
-            position: Vector3::new(0.0f32, 0.0f32, 0.0f32),
-            direction: Vector3::new(0.0f32, 0.0f32, 1.0f32)
+            position: Vector3::new(0f32, 0f32, 0f32),
+            direction: Vector3::new(0f32, 0f32, 1f32)
         }
     }
 }
