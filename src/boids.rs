@@ -16,6 +16,7 @@ const BOID_SPEED: f32 = 4f32;
 const NEIGHBOUR_DISTANCE: f32 = 10f32;
 const SEPARATION_DISTANCE: f32 = 1f32;
 const BOID_PLANE_DISTANCE: f32 = 5f32;
+const BOID_REPEL_MULTIPLIER: f32 = 5f32;
 const PLAYER_PLANE_DISTANCE: f32 = 0.5f32;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
 const MOUSE_SENSITIVITY: f32 = 4f32;
@@ -117,7 +118,7 @@ impl GameObject for Boid {
         new_direction = new_direction.add(centre_vector);
         new_direction = new_direction.add(align_vector);
         new_direction = new_direction.add(separation_vector);
-        new_direction = new_direction.add(repel_vector);
+        new_direction = new_direction.add(repel_vector.mul(BOID_REPEL_MULTIPLIER));
         new_direction = new_direction.normalize();
         let angle_between = new_direction.angle(self.direction);
         let frame_angle = MAX_TURN * frame_time;

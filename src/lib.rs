@@ -135,7 +135,7 @@ fn set_up_planes(start_id: u64, states: &mut Vec<GameObjectWithID>) {
         id: start_id + 2,
         game_object: Arc::new(Box::new(Plane {
             position: Vector3::new(0f32, 50f32, 50f32),
-            direction: Quaternion::from_angle_x(Rad(PI/2f32)) * Quaternion::from_angle_z(Rad(PI/2f32)),
+            direction: Quaternion::from_angle_x(Rad(PI/2f32)) * Quaternion::from_angle_z(Rad((3f32*PI)/2f32)),
             texturing: PlaneKind::Transparent
         }) as Box<GameObject>)
     };
