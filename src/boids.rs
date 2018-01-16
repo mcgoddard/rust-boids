@@ -16,6 +16,7 @@ const BOID_SPEED: f32 = 4f32;
 const NEIGHBOUR_DISTANCE: f32 = 10f32;
 const SEPARATION_DISTANCE: f32 = 1f32;
 const BOID_PLANE_DISTANCE: f32 = 5f32;
+const PLAYER_PLANE_DISTANCE: f32 = 0.5f32;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
 const MOUSE_SENSITIVITY: f32 = 4f32;
 const MOUSE_SMOOTHING: f32 = 2f32;
@@ -170,7 +171,7 @@ impl GameObject for Player {
         Box::new(*self)
     }
 
-    fn update(&self, _id: u64, _current_state: Arc<Vec<GameObjectWithID>>, 
+    fn update(&self, _id: u64, current_state: Arc<Vec<GameObjectWithID>>, 
             messages: Arc<MessageList>, frame_time: f32) -> UpdateResult {
         let mut md = Vector2::new(0f32, 0f32);
         let mut forward: f32 = 0f32;
@@ -203,6 +204,15 @@ impl GameObject for Player {
         let mut new_position = self.position;
         new_position = new_position + (new_forward_direction.mul(frame_time).mul(PLAYER_SPEED));
         new_position = new_position + (new_strafe_direction.mul(frame_time).mul(PLAYER_SPEED));
+        for object_pair in current_state.iter() {
+            let object: Box<GameObject> = object_pair.game_object.box_clone();
+            if let Some(plane) = object.downcast_ref::<Plane>() {
+                let plane_normal = plane.direction.rotate_vector(DIRECTION_UP);
+                if PLAYER_PLANE_DISTANCE > point_to_plane_distance(new_position, plane.position, plane_normal) {
+                    new_position = self.position;
+                }
+            }
+        }
         UpdateResult {
             state: Box::new(Player {
                 position: new_position,
