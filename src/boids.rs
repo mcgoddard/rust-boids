@@ -303,14 +303,16 @@ unsafe impl Sync for Plane {}
 #[derive(Clone, Copy)]
 pub struct Tree {
     pub position: Vector3<f32>,
-    pub direction: Vector3<f32>
+    pub direction: Vector3<f32>,
+    pub scale: f32,
 }
 
 impl Tree {
     pub fn new() -> Self {
         Tree {
             position: Vector3::new(0f32, 0f32, 0f32),
-            direction: Vector3::new(0f32, 0f32, 1f32)
+            direction: Vector3::new(0f32, 0f32, 1f32),
+            scale: 1f32
         }
     }
 }
@@ -331,7 +333,8 @@ impl GameObject for Tree {
         UpdateResult {
             state: Box::new(Tree {
                 position: self.position,
-                direction: self.direction
+                direction: self.direction,
+                scale: 1f32
             }),
             messages: vec![]
         }

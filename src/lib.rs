@@ -52,7 +52,7 @@ pub extern fn newSim(boid_num: usize) -> *mut Fungine {
     let mut rng = rand::thread_rng();
     let num_players = 1usize;
     let num_planes = 6usize;
-    let num_trees = 300usize;
+    let num_trees = 500usize;
     let num_objects = boid_num + num_players + num_trees + num_planes;
     let mut initial_state: Vec<GameObjectWithID> = Vec::with_capacity(num_objects);
     set_up_boids(boid_num, &mut initial_state, &mut rng);
@@ -179,7 +179,8 @@ fn set_up_trees(start_id: u64, num_trees: u64, states: &mut Vec<GameObjectWithID
         let z_dir = rng.gen_range::<f32>(-1f32, 1f32);
         let initial_object = Arc::new(Box::new(Tree {
             position: Vector3::new(x, 0f32, z),
-            direction: Vector3::new(x_dir, 0f32, z_dir).normalize()
+            direction: Vector3::new(x_dir, 0f32, z_dir).normalize(),
+            scale: rng.gen_range::<f32>(0.5f32, 1.5f32)
         }) as Box<GameObject>);
         states.push(GameObjectWithID {
             id: start_id + i,
