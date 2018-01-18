@@ -15,7 +15,8 @@ const PLAYER_SPEED: f32 = 2f32;
 const BOID_SPEED: f32 = 4f32;
 const NEIGHBOUR_DISTANCE: f32 = 10f32;
 const SEPARATION_DISTANCE: f32 = 1f32;
-const BOID_PLANE_DISTANCE: f32 = 5f32;
+const BOID_PLANE_DISTANCE: f32 = 4f32;
+const BOID_TREE_DISTANCE: f32 = 2f32;
 const BOID_REPEL_MULTIPLIER: f32 = 5f32;
 const PLAYER_PLANE_DISTANCE: f32 = 0.5f32;
 const MAX_TURN: Rad<f32> = Rad(PI / 4f32);
@@ -107,6 +108,18 @@ impl GameObject for Boid {
                 let plane_normal = plane.direction.rotate_vector(DIRECTION_UP);
                 if BOID_PLANE_DISTANCE > point_to_plane_distance(self.position, plane.position, plane_normal) {
                     repel_vector = repel_vector.add(plane_normal);
+                }
+            }
+            else if let Some(tree) = object.downcast_ref::<Tree>() {
+                let mut plane_position = self.position;
+                plane_position.y = 0f32;
+                let mut plane_tree_position = tree.position;
+                plane_tree_position.y = 0f32;
+                let direction = tree.position.sub(self.position);
+                if BOID_TREE_DISTANCE > plane_tree_position.sub(plane_position).magnitude() &&
+                    self.position.y < tree.scale * 2f32 {
+                    let direction = Quaternion::from_angle_y(Rad(PI/2f32)).rotate_vector(direction);
+                    repel_vector = repel_vector.add(direction);
                 }
             }
         }
@@ -334,7 +347,7 @@ impl GameObject for Tree {
             state: Box::new(Tree {
                 position: self.position,
                 direction: self.direction,
-                scale: 1f32
+                scale: self.scale
             }),
             messages: vec![]
         }
